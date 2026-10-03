@@ -14,7 +14,7 @@ const today = new Date()
 const deadlineDefault = new Date(today.getTime() + 60 * 86400000).toISOString().slice(0, 10)
 const form = reactive({
   goal: '', subject: '', current_level: '初学者', weekly_hours: 6,
-  study_days_per_week: 5, session_minutes: 60, deadline: deadlineDefault, context_notes: ''
+  study_days_per_week: 5, deadline: deadlineDefault, context_notes: ''
 })
 const plan = ref<StudyPlan | null>(null)
 const page = ref<'question' | 'results'>('question')
@@ -70,7 +70,7 @@ async function submitPlan() {
   loading.value = true
   error.value = ''
   const requestLearnerId = contextMode.value === 'independent' ? crypto.randomUUID() : learnerId.value
-  const payload: PlanRequest = { learner_id: requestLearnerId, ...form }
+  const payload: PlanRequest = { learner_id: requestLearnerId, ...form, session_minutes: 60 }
   try {
     plan.value = await generatePlan(payload)
     page.value = 'results'
@@ -161,8 +161,9 @@ onMounted(loadPlan)
             <div><h2>定义你的目标</h2><p>规划会根据你的节奏实时调整</p></div>
             <span class="form-step">01 <i>/ 01</i></span>
           </div>
-          <label class="field-label" for="goal">我希望达成</label>
-          <textarea id="goal" v-model="form.goal" rows="2" maxlength="500" placeholder="例如：三个月内掌握 Python 数据分析，并完成一个作品集项目"></textarea>
+          <label class="field-label" for="goal">我希望达成 <span class="field-required">必填</span></label>
+          <textarea id="goal" v-model="form.goal" rows="2" required minlength="4" maxlength="500" aria-describedby="goal-hint" placeholder="例如：三个月内掌握 Python 数据分析，并完成一个作品集项目"></textarea>
+          <p id="goal-hint" class="field-hint">至少填写 4 个字，描述你希望达成的具体结果。</p>
           <fieldset class="context-selector">
             <legend class="field-label">规划上下文</legend>
             <div class="context-options">
@@ -178,11 +179,10 @@ onMounted(loadPlan)
             <p class="context-hint">{{ contextMode === 'continue' ? '会把当前学习空间的未完成任务安排到新计划中。' : '会创建独立学习空间；之前的计划会保留，但不会带入本次规划。' }}</p>
           </fieldset>
           <div class="form-grid">
-            <label class="field-wrap"><span class="field-label">学习主题</span><input v-model="form.subject" placeholder="如：Python、英语、考研" /></label>
+            <label class="field-wrap"><span class="field-label">学习主题 <span class="field-optional">选填</span></span><input v-model="form.subject" placeholder="如：Python、英语、考研" /><small class="field-hint">留空时会根据学习目标搜索资料</small></label>
             <label class="field-wrap"><span class="field-label">当前水平</span><select v-model="form.current_level"><option>初学者</option><option>有一些基础</option><option>进阶提升</option><option>准备考试 / 项目</option></select></label>
             <label class="field-wrap"><span class="field-label">每周投入（小时）</span><input v-model.number="form.weekly_hours" type="number" min="1" max="60" /></label>
             <label class="field-wrap"><span class="field-label">每周学习天数</span><input v-model.number="form.study_days_per_week" type="number" min="1" max="7" /></label>
-            <label class="field-wrap"><span class="field-label">单次时长（分钟）</span><input v-model.number="form.session_minutes" type="number" min="15" max="240" step="15" /></label>
             <label class="field-wrap"><span class="field-label">目标日期</span><input v-model="form.deadline" type="date" /></label>
           </div>
           <label class="field-wrap context-field"><span class="field-label">补充背景 <span>选填</span></span><input v-model="form.context_notes" placeholder="如：上次学到函数、周末时间更多、最近有考试" /></label>

@@ -70,6 +70,9 @@ h1, h2, h3, p { margin-top: 0; }
 .form-step { margin-left: auto; color: #718078; font-size: 10px; font-weight: 700; }
 .form-step i { color: #b3beb8; font-style: normal; font-weight: 500; }
 .field-label { display: block; margin-bottom: 7px; color: #59675f; font-size: 10px; font-weight: 700; }
+.field-required { margin-left: 5px; color: #b74b42; font-size: 9px; font-weight: 600; }
+.field-optional { margin-left: 4px; color: #98a49d; font-size: 9px; font-weight: 500; }
+.field-hint { display: block; margin: 6px 0 0; color: #87948d; font-size: 9px; line-height: 1.5; }
 textarea, .field-wrap input, .field-wrap select { width: 100%; color: var(--ink); background: #fbfcfb; border: 1px solid #e4ebe6; border-radius: 5px; outline: 0; transition: border .18s, box-shadow .18s; }
 textarea { min-height: 65px; resize: vertical; padding: 10px 12px; font-size: 12px; line-height: 1.6; }
 textarea::placeholder, input::placeholder { color: #b0bcb5; }
