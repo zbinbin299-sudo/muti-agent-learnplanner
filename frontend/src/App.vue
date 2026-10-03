@@ -17,6 +17,7 @@ const form = reactive({
   study_days_per_week: 5, session_minutes: 60, deadline: deadlineDefault, context_notes: ''
 })
 const plan = ref<StudyPlan | null>(null)
+const page = ref<'question' | 'results'>('question')
 const loading = ref(false)
 const updatingTask = ref<string | null>(null)
 const error = ref('')
@@ -72,6 +73,7 @@ async function submitPlan() {
   const payload: PlanRequest = { learner_id: requestLearnerId, ...form }
   try {
     plan.value = await generatePlan(payload)
+    page.value = 'results'
     if (contextMode.value === 'independent') {
       learnerId.value = requestLearnerId
       localStorage.setItem(learnerStorageKey, requestLearnerId)
@@ -112,9 +114,8 @@ onMounted(loadPlan)
         <span class="brand-name">知序<span>STUDY STUDIO</span></span>
       </a>
       <div class="sidebar-label">工作区</div>
-      <a class="nav-item active" href="#plan"><Target :size="17" />学习规划</a>
-      <a class="nav-item" href="#tasks"><CalendarDays :size="17" />近期任务</a>
-      <a class="nav-item" href="#resources"><BookOpen :size="17" />资料书架</a>
+      <button class="nav-item" :class="{ active: page === 'question' }" type="button" @click="page = 'question'"><Target :size="17" />制定计划</button>
+      <button class="nav-item" :class="{ active: page === 'results' }" type="button" :disabled="!plan" @click="page = 'results'"><CalendarDays :size="17" />计划结果</button>
       <div class="sidebar-bottom">
         <div class="sidebar-note">
           <div class="note-icon"><Sparkles :size="16" /></div>
@@ -135,7 +136,7 @@ onMounted(loadPlan)
         <div class="topbar-right"><span class="today-dot"></span>{{ new Date().toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' }) }}</div>
       </header>
 
-      <section id="plan" class="intro-row">
+      <section v-if="page === 'question'" id="plan" class="intro-row">
         <div>
           <div class="eyebrow"><span class="eyebrow-line"></span>YOUR LEARNING, IN RHYTHM</div>
           <h1>让目标，<em>开始发生。</em></h1>
@@ -144,7 +145,16 @@ onMounted(loadPlan)
         <div class="date-stamp"><span>今天</span><strong>{{ new Date().getDate() }}</strong><small>{{ new Date().toLocaleDateString('zh-CN', { month: 'long', weekday: 'long' }) }}</small></div>
       </section>
 
-      <section class="planner-layout">
+      <section v-if="page === 'results'" class="intro-row result-intro">
+        <div>
+          <div class="eyebrow"><span class="eyebrow-line"></span>YOUR STUDY PLAN</div>
+          <h1>计划已就绪，<em>按步前进。</em></h1>
+          <p class="intro-copy">查看近期安排、学习策略与后续路线。</p>
+        </div>
+        <button class="secondary-button" type="button" @click="page = 'question'"><RotateCcw :size="15" />返回修改</button>
+      </section>
+
+      <section v-if="page === 'question'" class="planner-layout">
         <form class="goal-form" @submit.prevent="submitPlan">
           <div class="form-heading">
             <div class="heading-icon"><Target :size="19" /></div>
@@ -209,7 +219,7 @@ onMounted(loadPlan)
 
       <div v-if="error" class="error-banner" role="alert">{{ error }}</div>
 
-      <template v-if="plan && contextMode === 'continue'">
+      <template v-if="page === 'results' && plan">
         <section class="summary-strip" aria-label="计划摘要">
           <div class="summary-goal"><span class="summary-icon"><GraduationCap :size="18" /></span><div><small>当前目标</small><strong>{{ plan.goal.clarified_goal }}</strong></div></div>
           <div class="summary-stat"><span>计划周期</span><strong>{{ plan.goal.estimated_weeks }}<small>周</small></strong></div>
